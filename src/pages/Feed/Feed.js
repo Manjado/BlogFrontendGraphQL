@@ -61,6 +61,7 @@ class Feed extends Component {
               _id
               title
               content
+              imageUrl
               creator {
                 name
               }
@@ -148,9 +149,17 @@ class Feed extends Component {
     });
     // Set up data (with image!)
     const formData = new FormData();
-    formData.append('title', postData.title);
-    formData.append('content', postData.content);
     formData.append('image', postData.image);
+    if (this.state.editPost) {
+        formData.append('oldPath', this.state.editPost.imagePath)
+    }
+    fetch('http://localhost:8080/post-image', {
+        method: 'PUT',
+        headers: {
+            Authorization: 'Bearer ' + this.props.token,
+            'Content-Type': 'application/json'
+        }
+    })
 
     let graphqlQuery = {
       query: `
@@ -194,7 +203,8 @@ class Feed extends Component {
           title: resData.data.createPost.title,
           content: resData.data.createPost.content,
           creator: resData.data.createPost.creator,
-          createdAt: resData.data.createPost.createdAt
+          createdAt: resData.data.createPost.createdAt,
+          imagePath: resData.data.createPost.imageUrl
         };
           this.setState(prevState => {
               let updatedPosts = [...prevState.posts];
