@@ -156,37 +156,39 @@ class Feed extends Component {
     fetch('http://localhost:8080/post-image', {
         method: 'PUT',
         headers: {
-            Authorization: 'Bearer ' + this.props.token,
-            'Content-Type': 'application/json'
-        }
-    })
-
-    let graphqlQuery = {
-      query: `
-        mutation {
-            createPost(postInput: {title: "${postData.title}", content: "${postData.content}", imageUrl: "some url"}) {
-              _id
-              title
-              content
-              imageUrl
-              creator {
-                name
-              }
-              createdAt
+            Authorization: 'Bearer ' + this.props.token
+        },
+        body: formData
+    }).then(res => res.json())
+        .then(fileResData => {
+        const imageUrl = fileResData.filePath.replace('\\', '/');
+            let graphqlQuery = {
+                query: `
+                mutation {
+                    createPost(postInput: 
+                    {title: "${postData.title}", content: "${postData.content}", imageUrl: "${imageUrl}"}) {
+                      _id
+                      title
+                      content
+                      imageUrl
+                      creator {
+                        name
+                      }
+                      createdAt
+                    }
+                }
+              `
             }
-        }
-      `
-    }
 
-    fetch('http://localhost:8080/graphql', {
-      method: 'POST',
-        body: JSON.stringify(graphqlQuery),
-        headers: {
-            Authorization: 'Bearer ' + this.props.token,
-            'Content-Type': 'application/json'
-        }
-    })
-      .then(res => {
+            return fetch('http://localhost:8080/graphql', {
+                method: 'POST',
+                body: JSON.stringify(graphqlQuery),
+                headers: {
+                    Authorization: 'Bearer ' + this.props.token,
+                    'Content-Type': 'application/json'
+                }
+            })
+    }).then(res => {
         return res.json();
       })
       .then(resData => {
